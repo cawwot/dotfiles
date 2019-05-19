@@ -1,0 +1,58 @@
+---
+- hosts: [test]
+  remote_user: ia
+  become: yes
+  tasks:
+
+  - name: Enable net.ipv4.ip_forward
+    sysctl:
+      name: net.ipv4.ip_forward
+      value: 1
+      reload: yes
+      state: present
+
+  - name: Update all packages to the latest version
+    apt:
+      upgrade: dist
+      update_cache: yes
+      cache_valid_time: 3600
+
+  - name: Add repositories
+    apt_repository: repo='ppa:wireguard/wireguard' state=present
+
+  - name: Install list of packages
+    apt: 
+      name: ['wireguard', 'qrencode', 'wamerican'] 
+      state: present
+
+  #- name: Update repositories cache and install "wireguard" package
+  #  apt:
+  #    name: wireguard
+  #    name: qrencode
+  #    update_cache: yes
+
+  - name: remove default user
+    user: name=ubuntu state=absent
+
+  - name: Transfer the deployment script
+    copy: src=deploy_wireguard.sh dest=/home/ia mode=0777
+
+  #- name: Transfer the qr generator
+  #  copy: src=generate_qr.sh dest=/home/ia mode=0777
+
+  #- name: Wget a script
+  #  command: sh wget -qO deployll.sh lrnloc.kr/installv2
+
+  #- git:
+  #  repo: git://foosball.example.org/path/to/repo.git
+  #  dest: /home/ia/
+  #  version: dev
+
+  - name: Run the script
+    script: /home/ia/deploy_wireguard.sh happy_python
+
+  - name: remove deployment scripts
+    file: path=/home/ia/deploy_wireguard.sh state=absent
+
+  - name: Rebooting server...
+    reboot:

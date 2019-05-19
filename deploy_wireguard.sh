@@ -60,4 +60,6 @@ ufw allow 51820/udp
 ufw allow ssh
 ufw --force enable
 
+chmod +x /usr/local/bin/generate-profile
+
 exit 0
